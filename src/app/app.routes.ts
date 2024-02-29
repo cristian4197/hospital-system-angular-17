@@ -1,36 +1,24 @@
 import { Routes } from '@angular/router';
+import { dashboardChildRoutes } from './routes/dashboard.routes';
+import { authChildRoutes } from './routes/auth.routes';
 
 export const routes: Routes = [
     {
-        path: '',
+        path: 'dashboard',
         loadComponent: () => import('./pages/pages.component'),
-        children: [
-            {
-                path: 'dashboard',
-                loadComponent: () => import('./pages/dashboard/dashboard.component')
-            },
-            {
-                path: 'progress',
-                loadComponent: () => import('./pages/progress/progress.component')
-            },
-            {
-                path: 'graph1',
-                loadComponent: () => import('./pages/graph1/graph1.component')
-            },
-            {
-                path: '',
-                redirectTo: '/dashboard',
-                pathMatch: 'full'
-            },
-        ]
+        children: dashboardChildRoutes
+        
     },
     {
-        path: 'login',
-        loadComponent: () => import('./auth/login/login.component')
+        path: 'auth',
+        loadComponent: () => import('./auth/auth.component'),
+        children: authChildRoutes
+
     },
     {
-        path: 'register',
-        loadComponent: () => import('./auth/register/register.component')
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
     },
     {
         path: '**',
