@@ -1,1 +1,36 @@
-<p>graph1 works!</p>
+<div class="row">
+    <div class="col-6">
+        <app-donout
+            title="Grafico 1"
+            [labels]="['Leyenda1', 'Leyenda2', 'Leyenda3']"
+            [dataGraphs]="[10,20,30]"
+            [backgroundColors]="['#FF5733','#FFF033','#33FF47']">
+        </app-donout>
+    </div>
+    <div class="col-6">
+        <app-donout
+            title="Grafico 2"
+            [labels]="['Leyenda4', 'Leyenda5', 'Leyenda6']"
+            [dataGraphs]="[40,50,60]"
+            [backgroundColors]="['#33CBFF','#337CFF','#8033FF']"
+            >
+        </app-donout>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-6">
+        <app-donout
+            title="Grafico 3"
+            [labels]="['Leyenda7', 'Leyenda8', 'Leyenda9']"
+            [dataGraphs]="[70,80,90]">            
+        </app-donout>
+    </div>
+    <div class="col-6">
+        <app-donout
+            title="Grafico 4"
+            [labels]="['Leyenda10', 'Leyenda11', 'Leyenda12']"
+            [dataGraphs]="[100,110,120]">            
+        </app-donout>
+    </div>
+</div>

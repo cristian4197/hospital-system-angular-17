@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
+import { DonoutComponent } from '../../components/donout/donout.component';
 
 @Component({
   selector: 'app-graph1',
   standalone: true,
-  imports: [],
+  imports: [ DonoutComponent ],
   templateUrl: './graph1.component.html',
   styles: ``
 })
