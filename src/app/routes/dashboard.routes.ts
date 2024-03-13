@@ -14,6 +14,10 @@ export const dashboardChildRoutes: Routes = [
         loadComponent: () => import('../pages/graph1/graph1.component')
     },
     {
+        path: 'account-settings',
+        loadComponent: () => import('../pages/account-setting/account-setting.component')
+    },
+    {
         path: '**',
         redirectTo: ''
     }
