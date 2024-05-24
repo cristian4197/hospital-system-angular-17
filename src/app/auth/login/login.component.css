@@ -47,3 +47,8 @@ Login register and recover password Page
     
 }
 
+.container-button {
+  display: grid;
+  place-content: center;
+}
+

@@ -21,7 +21,6 @@ export class BreadcrumbsComponent implements OnDestroy {
   addSuscriptionRoutes(): void {
     this.suscription = this.getDataRoutes().subscribe({
       next: (value) => {
-        console.log(value['title']);
         this.title = value['title'];
         document.title = `AdminPro - ${value['title']}`;
       }

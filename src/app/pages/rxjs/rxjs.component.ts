@@ -50,7 +50,7 @@ export default class RxjsComponent implements OnDestroy {
       // Emite solo 10 valores
       take(10)
       );
-    }
+  }
     
     returnObservable(): Observable<number> {
       let i = -1;

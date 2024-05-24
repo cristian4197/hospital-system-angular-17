@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-header',
@@ -9,4 +10,10 @@ import { RouterModule } from '@angular/router';
   styles: ``
 })
 export class HeaderComponent {
+ private userService = inject(UserService);
+
+ logout(): void {
+  this.userService.logout();
+ }
+ 
 }
