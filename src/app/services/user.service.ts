@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, NgZone, inject } from '@angular/core';
 import { RegisterForm } from '../interfaces/register-form';
 import { environment } from '../../environments/environment';
 import { LoginForm } from '../interfaces/login-form';
@@ -7,6 +7,8 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { Router } from '@angular/router';
 import { UserGoogle } from '../models/user.google.model';
+import { User } from '../models/user.model';
+import { GoogleService } from './google.service';
 
 const base_url = environment.base_url;
 declare const google: any;
@@ -17,8 +19,12 @@ declare const google: any;
 export class UserService {
 
   private router = inject(Router);
+ 
+  private googleService = inject(GoogleService);
+  
+  public user!:User;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient,  private ngZone: NgZone) { }
 
   tokenValidate(): Observable<boolean> {
     const token = localStorage.getItem('token') || '';
@@ -28,12 +34,20 @@ export class UserService {
         'x-token': token
       }
     }).pipe(
-      tap((resp: any) => {
-        localStorage.setItem('token', resp.token)
+      map((resp: any) => {        
+        const user = this.userInitialize(resp.user);
+        this.user = user;
+                
+        localStorage.setItem('token', resp.token);
+        return true;
       }),
-      map(resp => true),
       catchError(error => of(false))
     );
+  }
+
+  userInitialize(user: any): User {
+    const { name, email, role, google, img, uid } = user;
+    return new User(name, email, '', img, google, role, uid);
   }
 
   createUser(formData: RegisterForm) {
@@ -84,7 +98,7 @@ export class UserService {
   }
 
   private clearSession(email: string): void {
-    this.revokeSessionGoogle(email).then(() => {
+    this.googleService.revokeSessionGoogle(email).then(() => {
       this.clearLocalStorage();
       this.redirecToLogin();
     }).catch(err => {
@@ -92,18 +106,7 @@ export class UserService {
     });;
   }
 
-  private revokeSessionGoogle(email: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      google.accounts.id.revoke(email, (resp: any) => {
-        if (resp.error) {
-          reject(resp.error);
-        } else {
-          resolve();
-        }
-      });
-    });
 
-  }
 
   private clearLocalStorage(): void {
     localStorage.clear();
@@ -114,6 +117,7 @@ export class UserService {
   }
 
   private redirecToLogin(): void {
-    this.router.navigateByUrl('/auth');
+    this.ngZone.run(()=> this.router.navigateByUrl('/auth'));
+   
   }
 }

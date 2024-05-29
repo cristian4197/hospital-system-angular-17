@@ -5,7 +5,6 @@ import { Router, RouterModule } from '@angular/router';
 import { UserService } from '../../services/user.service';
 
 import Swal from 'sweetalert2';
-import { timer } from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -47,27 +46,41 @@ export default class RegisterComponent {
     this.userService.createUser(this.registerForm.value)
         .subscribe({
           next: (resp) => {
-            console.log(resp);
-            Swal.fire({
-              title: 'Felicidades',
-              text: 'Registro Exitoso',
-              icon: 'success',
-              confirmButtonText: 'Ok',
-              timer: 1000
-            });
+            this.renderSwalAlertSuccess(true);
 
-            timer(2000).subscribe(() => this.router.navigateByUrl('/dashboard'));
+             this.redirectToPath('dashboard');
           },
           error: (err) => {
-            Swal.fire({
-              title: 'Error!',
-              text: err.error.msg,
-              icon: 'error',
-              confirmButtonText: 'Ok'
-            });
+            this.renderSwalAlertSuccess(false);
+
           },
           complete: () => console.info('complete') 
         })
+  }
+
+  private renderSwalAlertSuccess(isSuccess: boolean, error?: any): void {
+    if(isSuccess) {
+      Swal.fire({
+        title: 'Felicidades',
+        text: 'Registro Exitoso',
+        icon: 'success',
+        confirmButtonText: 'Ok',
+        timer: 1000
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: 'Error!',
+      text: error.error.msg,
+      icon: 'error',
+      confirmButtonText: 'Ok'
+    });
+    
+  }
+
+  private redirectToPath(path: string): void {
+    this.router.navigate([`/${path}`]);
   }
 
   isInputInvalid(name: string) : boolean {

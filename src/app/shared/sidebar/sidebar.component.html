@@ -9,15 +9,15 @@
                 <li class="user-profile">
                     <a class="has-arrow waves-effect waves-dark"  aria-expanded="false">
                         <img
-                            src="./assets/images/users/profile.png" alt="user"/>
-                            <span class="hide-menu">Steave Jobs</span>
+                            [src]="user.image" alt="user"/>
+                            <span class="hide-menu">{{ user.name | slice:0:20 }}</span>
                     </a>
                     <ul aria-expanded="false" class="collapse" >
-                        <li><a href="javascript:void()">My Profile </a></li>
+                        <li><a routerLinkActive="active" routerLink="profile">My Profile </a></li>
                         <li><a href="javascript:void()">My Balance</a></li>
                         <li><a href="javascript:void()">Inbox</a></li>
-                        <li><a routerLink="account-settings">Account Setting</a></li>
-                        <li><a routerLink="/auth">Logout</a></li>
+                        <li><a routerLinkActive="active" routerLink="account-settings">Account Setting</a></li>
+                        <li><a class="cursor" (click)="logout()">Logout</a></li>
                     </ul>
                 </li>
                 <li class="nav-devider"></li>

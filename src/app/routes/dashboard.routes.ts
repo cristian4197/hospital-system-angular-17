@@ -44,6 +44,13 @@ export const dashboardChildRoutes: Routes = [
         }
     },
     {
+        path: 'profile',
+        loadComponent: () => import('../pages/profile/profile.component'),
+        data: {
+            title: 'Profile'
+        }
+    },
+    {
         path: '**',
         redirectTo: ''
     }

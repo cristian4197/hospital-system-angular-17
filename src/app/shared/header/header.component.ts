@@ -1,19 +1,56 @@
-import { Component, inject } from '@angular/core';
+import { Component, NgZone, OnInit, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { UserService } from '../../services/user.service';
+import { User } from '../../models/user.model';
+import { CommonModule } from '@angular/common';
+import { GoogleService } from '../../services/google.service';
+import Swal from 'sweetalert2';
+import { Observable, Subscription, tap } from 'rxjs';
+
+
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, CommonModule],
   templateUrl: './header.component.html',
   styles: ``
 })
-export class HeaderComponent {
- private userService = inject(UserService);
+export class HeaderComponent implements OnInit {
 
- logout(): void {
-  this.userService.logout();
- }
- 
+  private userService = inject(UserService);
+
+  constructor(private googleService:GoogleService){
+
+  }
+
+  public user!: User;
+
+   async ngOnInit(): Promise<void> {
+    this.getUser();
+    if(localStorage.getItem('isLoggedInGoogle')) {
+      await this.googleService.googleInit();
+    }
+  }
+
+
+  logout(): void {
+    if(localStorage.getItem('isLoggedInGoogle')) {
+      this.logoutStateGoogle();
+    }
+
+    this.userService.logout();   
+  }
+
+  private logoutStateGoogle(): void {
+    this.googleService.state.subscribe(state => {
+      if(state) {
+        this.googleService.logout();   
+      }
+    });
+  }
+
+  getUser(): void {
+    this.user = this.userService.user;
+  }
 }

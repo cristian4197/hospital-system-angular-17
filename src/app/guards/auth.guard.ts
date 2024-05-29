@@ -8,7 +8,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   const userService = inject(UserService);
   return userService.tokenValidate()
           .pipe(
-            tap(resp => { 
+            tap(resp => {
                 if(!resp) {
                   router.navigateByUrl('/auth');
                 }

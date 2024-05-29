@@ -4,10 +4,11 @@ import { Router, RouterModule } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { LoginForm } from '../../interfaces/login-form';
 
-import Swal from 'sweetalert2';
 import { UserGoogle } from '../../models/user.google.model';
+import { GoogleService } from '../../services/google.service';
 
-declare const google: any;
+import Swal from 'sweetalert2';
+
 
 @Component({
   selector: 'app-login',
@@ -15,93 +16,121 @@ declare const google: any;
   imports: [RouterModule, FormsModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
+
 })
+
 export default class LoginComponent implements OnInit, AfterViewInit {
+
   private router = inject(Router);
-  userService = inject(UserService);
+
+  private userService = inject(UserService);
+
+  private googleService = inject(GoogleService);
 
   public loginForm = this.fb.group({
-    email: ['', [ Validators.required, Validators.email ]],
-    password: ['', [ Validators.required ]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required]],
     remember: [false]
+
   });
 
   @ViewChild('googleBtn') googleBtn!: ElementRef;
 
   constructor(private fb: FormBuilder,
-              private ngZone:NgZone) { }
 
-  ngOnInit(): void {
-   this.onRememberEmail();
+    private ngZone: NgZone) { }
+
+  async ngOnInit(): Promise<void> {
+    this.onRememberEmail();
+    await this.googleInit();
   }
 
-    
   ngAfterViewInit(): void {
-    this.googleInit();
+    this.googleService.renderButton(this.googleBtn.nativeElement);
   }
 
   onRememberEmail(): void {
     const email = localStorage.getItem('email');
-    if(email) {
+
+    if (email) {
       this.loginForm.get('email')?.setValue(email);
     }
+
   }
 
+  async googleInit(): Promise<void> {
+    try {
+      const credential = await this.googleService.googleInit();
 
-  googleInit(): void {
-    google.accounts.id.initialize({
-      client_id: "885119507257-a5p2kp2l2o3p3abaceebmm3300olqt81.apps.googleusercontent.com",
-      callback: (response: any) => this.handleCredentialResponse(response)
-    });
-    
-    google.accounts.id.renderButton(
-      // document.getElementById("buttonDiv"),
-      this.googleBtn.nativeElement,
-      { theme: "outline", size: "large" }  // customization attributes
-    );
+      this.handleCredentialResponse(credential);
+    } catch (error) {
+      console.error('Error al inicializar servicio de Google');
+    }
+
   }
 
-  handleCredentialResponse(response: any) {
-    this.userService.loginGoogle(response.credential)
-        .subscribe(resp => {
-          const { email, name, picture, token } = resp
-          const userGoogle: UserGoogle = {
-            email,
-            name,
-            picture,
-            token
+  private handleCredentialResponse(credential: any) {
+    this.userService.loginGoogle(credential)
+      .subscribe(
+        {
+          next: (resp) => {
+            this.setUserGoogle(resp);
+            this.ngZone.run(() => this.redirectToPath('/dashboard'));
+          },
+
+          error: (err) => {
+            Swal.fire({
+              title: 'Error!',
+              text: 'Google login failed. Please try again.',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
           }
-          
-          localStorage.setItem('userGoogle', JSON.stringify(userGoogle));
-        //POR alguna extraña razon al usar la libreria de google
-        //se ejecuta codigo fuera de la zone de angular lo que ocasiona un
-        // comportamiento raro del router, para evitar usar el ngzone
-          this.ngZone.run(() => this.router.navigate(['/dashboard']));
-        })
+        }
+      );
+  }
+
+  private setUserGoogle(resp: any): void {
+    const { email, name, picture, token } = resp
+    const userGoogle: UserGoogle = {
+      email,
+      name,
+      picture,
+      token
+    }
+    localStorage.setItem('userGoogle', JSON.stringify(userGoogle));
+  }
+
+  private redirectToPath(path: string): void {
+    this.router.navigate([`/${path}`]);
   }
 
   onLogin(): void {
     this.userService.login(this.loginForm.value as LoginForm)
-        .subscribe({
-          next: (resp) => {
-            if(this.loginForm.get('remember')?.value) {
-              localStorage.setItem('email', this.loginForm.get('email')?.value as string);
-            } else {
-              localStorage.removeItem('email');
-            }
-            
-            this.router.navigate(['/dashboard']);
-          },
-          error: (err) => {
-            Swal.fire({
-              title: 'Error!',
-              text: err.error.msg,
-              icon: 'error',
-              confirmButtonText: 'Ok'
-            });
-          },
-          complete: () => console.info('complete') 
-        })
-    
+      .subscribe({
+        next: (resp) => {
+          this.validateRememberEmail();
+          this.redirectToPath('dashboard');
+        },
+        error: (err) => {
+          Swal.fire({
+            title: 'Error!',
+            text: err.error.msg,
+            icon: 'error',
+            confirmButtonText: 'ok'
+          });
+        },
+        complete: () => { }
+      });
+  }
+
+
+
+  private validateRememberEmail(): void {
+    if (this.loginForm.get('remember')?.value) {
+      localStorage.setItem('email', this.loginForm.get('email')?.value as string);
+    } else {
+      localStorage.removeItem('email');
+    }
   }
 }
