@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { UserService } from '../../services/user.service';
 
 import Swal from 'sweetalert2';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -13,7 +14,7 @@ import Swal from 'sweetalert2';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-export default class RegisterComponent {
+export default class RegisterComponent implements OnDestroy {
   public formSubmitted = false;
 
 
@@ -30,12 +31,14 @@ export default class RegisterComponent {
 
   private router = inject(Router);
 
+  private subscriptions: Subscription = new Subscription();
+
   constructor (private fb: FormBuilder, 
                private userService: UserService
   ) {
 
   }
-
+ 
   createUser(): void {
     this.formSubmitted = true;
     
@@ -43,7 +46,8 @@ export default class RegisterComponent {
       return;
     }
 
-    this.userService.createUser(this.registerForm.value)
+    this.subscriptions.add(
+      this.userService.createUser(this.registerForm.value)
         .subscribe({
           next: (resp) => {
             this.renderSwalAlertSuccess(true);
@@ -56,6 +60,8 @@ export default class RegisterComponent {
           },
           complete: () => console.info('complete') 
         })
+    );
+    
   }
 
   private renderSwalAlertSuccess(isSuccess: boolean, error?: any): void {
@@ -117,6 +123,10 @@ export default class RegisterComponent {
         });
       }
     }
+  }
+
+  ngOnDestroy(): void {
+   this.subscriptions.unsubscribe();
   }
 
 }

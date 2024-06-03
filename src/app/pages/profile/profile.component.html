@@ -4,22 +4,23 @@
             <div class="card-body">
                 <h4 class="card-title">Perfil de Usuario</h4>
                 <h6 class="card-subtitle">Ajustes</h6>
-                <form class="form p-t-20">
+                <form class="form p-t-20" [formGroup]="profileForm" (ngSubmit)="updateUser()">
                     <div class="form-group">
                         <label for="exampleInputuname">User Name</label>
                         <div class="input-group">
                             <div class="input-group-addon"><i class="ti-user"></i></div>
-                            <input type="text" class="form-control" id="exampleInputuname" placeholder="Username">
+                            <input type="text" class="form-control" id="exampleInputuname" placeholder="Username" formControlName="user">
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="exampleInputEmail1">Email address</label>
                         <div class="input-group">
                             <div class="input-group-addon"><i class="ti-email"></i></div>
-                            <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Enter email">
+                            <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Enter email" formControlName="email"
+                           >
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-success btn-block waves-effect waves-light m-r-10"><i class="fa fa-save"></i> Guardar Cambios</button>
+                    <button type="submit" class="btn btn-success btn-block waves-effect waves-light m-r-10" [disabled]="profileForm.invalid"><i class="fa fa-save"></i> Guardar Cambios</button>
                 </form>
             </div>
         </div>
@@ -30,14 +31,24 @@
             <div class="card-body">
                 <h4 class="card-title">Avatar</h4>
                 <h6 class="card-subtitle">Imagen del usuario</h6>
+                <div class="container-image d-flex justify-content-center">
+                    @if( !imageTemp ) {
+                        <img [src]="user.image" alt="Imagen de usuario" width="200" height="200" >
+                    }@else {
+                        <img [src]="imageTemp" alt="Imagen de usuario" width="200" height="200">
+                    }
+                </div>
 
-                <img src="" alt="">
-
-                <input type="file">
+                <input type="file" (change)="changeFile($event)">
 
                 <br><br>
 
-                <button type="button" class="btn btn-success btn-block waves-effect waves-light m-r-10"><i class="fa fa-save"></i> Cambiar Imagen</button>
+                <button type="button"
+                        class="btn btn-success btn-block waves-effect waves-light m-r-10"
+                        [disabled]="!imageToUpload"
+                        (click)="uploadImageChanged()">
+                        <i class="fa fa-save"></i> Cambiar Imagen
+                </button>
             </div>
         </div>
     </div>

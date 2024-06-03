@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, NgZone, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { UserService } from '../../services/user.service';
@@ -8,6 +8,7 @@ import { UserGoogle } from '../../models/user.google.model';
 import { GoogleService } from '../../services/google.service';
 
 import Swal from 'sweetalert2';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -19,13 +20,15 @@ import Swal from 'sweetalert2';
 
 })
 
-export default class LoginComponent implements OnInit, AfterViewInit {
+export default class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private router = inject(Router);
 
   private userService = inject(UserService);
 
   private googleService = inject(GoogleService);
+
+  private subscriptions: Subscription = new Subscription();
 
   public loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -70,7 +73,8 @@ export default class LoginComponent implements OnInit, AfterViewInit {
   }
 
   private handleCredentialResponse(credential: any) {
-    this.userService.loginGoogle(credential)
+    this.subscriptions.add(
+      this.userService.loginGoogle(credential)
       .subscribe(
         {
           next: (resp) => {
@@ -87,7 +91,7 @@ export default class LoginComponent implements OnInit, AfterViewInit {
             });
           }
         }
-      );
+      ));
   }
 
   private setUserGoogle(resp: any): void {
@@ -106,7 +110,8 @@ export default class LoginComponent implements OnInit, AfterViewInit {
   }
 
   onLogin(): void {
-    this.userService.login(this.loginForm.value as LoginForm)
+    this.subscriptions.add(
+      this.userService.login(this.loginForm.value as LoginForm)
       .subscribe({
         next: (resp) => {
           this.validateRememberEmail();
@@ -115,13 +120,14 @@ export default class LoginComponent implements OnInit, AfterViewInit {
         error: (err) => {
           Swal.fire({
             title: 'Error!',
-            text: err.error.msg,
+            text: 'Error en Conexión',
             icon: 'error',
             confirmButtonText: 'ok'
           });
         },
         complete: () => { }
-      });
+      })
+    );
   }
 
 
@@ -132,5 +138,9 @@ export default class LoginComponent implements OnInit, AfterViewInit {
     } else {
       localStorage.removeItem('email');
     }
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 }

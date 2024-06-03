@@ -10,7 +10,7 @@ export class GoogleService {
    
     constructor() { 
         const savedState = localStorage.getItem('isLoggedInGoogle');        
-        this.state$ = new BehaviorSubject<boolean>(savedState === 'true');        
+        this.state$ = new BehaviorSubject<boolean>(savedState === 'true');   
     }
 
     get state(): Observable<boolean> {
@@ -18,15 +18,14 @@ export class GoogleService {
     }
 
     // Ejecutar metodo en los componentes que se desee validar si se inicio sesion correctamente
-    googleInit(): Promise<void> {
+    googleInit(): Promise<string> {
         return new Promise((resolve, reject) => {
             try {
                 google.accounts.id.initialize({
                     client_id: GoogleCredential.ClientId,
                     callback: (response: any) => {
                         if( response && response.credential) {
-                            this.state$.next(true);
-                            localStorage.setItem('isLoggedInGoogle', 'true');                          
+                            this.setUserGoogleAuthenticathed();
                             resolve(response.credential);
                         } else {
                             reject(new Error('Failed to retrieve Google credential.'));
@@ -41,6 +40,11 @@ export class GoogleService {
         })
     }
 
+    private setUserGoogleAuthenticathed(): void {
+        this.state$.next(true);
+        localStorage.setItem('isLoggedInGoogle', 'true');     
+    }
+
     renderButton(button: ElementRef): void {
         google.accounts.id.renderButton(
             button,
@@ -52,10 +56,6 @@ export class GoogleService {
         google.accounts.id.disableAutoSelect();
         localStorage.removeItem('isLoggedInGoogle');  // Remove persisted state
         this.state$.next(false);  // Usuario desautenticado
-    }
-
-    isLoggedIn(): boolean {
-        return this.state$.value;
     }
 
     revokeSessionGoogle(email: string): Promise<void> {

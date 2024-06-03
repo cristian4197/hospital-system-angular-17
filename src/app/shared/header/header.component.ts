@@ -1,4 +1,4 @@
-import { Component, NgZone, OnInit, inject } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user.model';
@@ -16,13 +16,13 @@ import { Observable, Subscription, tap } from 'rxjs';
   templateUrl: './header.component.html',
   styles: ``
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
 
   private userService = inject(UserService);
 
-  constructor(private googleService:GoogleService){
+  private subscriptions: Subscription = new Subscription();
 
-  }
+  constructor(private googleService:GoogleService){  }
 
   public user!: User;
 
@@ -51,6 +51,18 @@ export class HeaderComponent implements OnInit {
   }
 
   getUser(): void {
-    this.user = this.userService.user;
+    this.subscriptions.add(
+      this.userService.user.subscribe(        
+        resp => {
+          this.user = resp 
+        }
+      )
+    );
+    
   }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
 }

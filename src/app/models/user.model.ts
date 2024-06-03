@@ -35,6 +35,18 @@ export class User {
         return this._email;
     }
 
+    get uid(): string | undefined{
+        return this._uid;
+    }
+
+    get role(): string | undefined{
+        return this._role;
+    }
+
+    get google(): boolean | undefined {
+        return this._google;
+    }
+
     get image(): string {
         if(this._img?.includes('https')) {
             return this._img;
@@ -45,6 +57,10 @@ export class User {
         }
         
         return `${environment.base_url}/upload/users/${this._img}`;
+    }
+
+    set image(path: string) {
+       this._img = path;
     }
 
 }
