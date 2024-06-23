@@ -1,0 +1,7 @@
+.container-button {
+    display: flex;
+    justify-content: center;
+}
+.modalDelete{
+    cursor: pointer;
+}

@@ -2,16 +2,16 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { Injectable, NgZone, OnDestroy, inject } from '@angular/core';
 import { RegisterForm } from '../interfaces/register-form';
 import { environment } from '../../environments/environment';
-import { LoginForm } from '../interfaces/login-form';
 import { catchError, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject, of, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { UserGoogle } from '../models/user.google.model';
 import { User } from '../models/user.model';
 import { GoogleService } from './google.service';
-import { IUser } from '../interfaces/user';
+import { IDeleteUser, IUser } from '../interfaces/user';
 import Swal from 'sweetalert2';
 import { ErrorCodes } from '../const/error.const';
+import { IResponseDataUser } from '../interfaces/reponse-get-user';
 
 const base_url = environment.base_url;
 declare const google: any;
@@ -37,6 +37,72 @@ export class UserService implements OnDestroy {
 
   get token(): string {
     return localStorage.getItem('token') || '';
+  }
+
+
+  getUsers(from: number): Observable<IResponseDataUser> {
+    const url = `${base_url}/users?from=${from}`;
+    const headers = new HttpHeaders({ 'x-token': this.token });
+    return this.http.get<IResponseDataUser>(url, { headers }).pipe(
+      map((resp: IResponseDataUser) => {
+        return this.getUsersDataResponse(resp);
+      }),
+      catchError((error: HttpErrorResponse) => {
+        return throwError(() => new Error('Error al Registrar', { cause: error.error.msg }));
+      })
+    );
+  }
+
+  getUsersById(id: string): Observable<User> {
+    const url = `${base_url}/users/detail?id=${id}`;
+    const headers = new HttpHeaders({ 'x-token': this.token });
+    return this.http.get<User>(url, { headers }).pipe(
+      map((resp: any) => {
+        const { user } = resp;
+        return new User(
+          user.name,
+          user.email,
+          '',
+          user.img,
+          user.google,
+          user.role,
+          user.uid
+        );
+      }),
+      catchError((error: HttpErrorResponse) => {
+        return throwError(() => new Error('Error al Registrar', { cause: error.error.msg }));
+      })
+    );
+  }
+
+  private getUsersDataResponse(resp: IResponseDataUser): IResponseDataUser {
+    const usersFilters = this.filterUsersWitOUtCurrentUser(resp.users);
+    const dataResponse: IResponseDataUser = {
+      total: resp.total,
+      users: this.returnArrayOfUsers(usersFilters)
+    };
+
+    return dataResponse;
+  }
+
+  private filterUsersWitOUtCurrentUser(user: User[]): User[] {
+    const { uid } = this.user$.getValue();
+    // Quitamos el user Actual
+    return user.filter(user => user.uid !== uid);
+  }
+
+  private returnArrayOfUsers(users: User[]): User[] {
+    // Hacemos esto para obtener la url de la imagen correctamente
+    // debido a que al instanciar new User se arma correctamente la url
+    return users.map((userData: any) => new User(
+      userData.name,
+      userData.email,
+      '',
+      userData.img,
+      userData.google,
+      userData.role,
+      userData.uid
+    ))
   }
 
   tokenValidate(): Observable<boolean> {
@@ -67,7 +133,8 @@ export class UserService implements OnDestroy {
     return new User(name, email, '', img, google, role, uid);
   }
 
-  updateUserImage(urlImage: string): void {
+  updateUserImage(urlImage: string, isCurrentSessionUser: boolean): void {
+    if (!isCurrentSessionUser) { return; }
     const { name, email, role, google, uid } = this.user$.getValue();
     const updatedUser = new User(
       name,
@@ -89,20 +156,24 @@ export class UserService implements OnDestroy {
       .pipe(
         tap((resp: any) => {
           localStorage.setItem('token', resp.token)
+        }),
+        catchError((error: HttpErrorResponse) => {
+          return throwError(() => new Error('Error al Registrar', { cause: error.error.msg }))
         })
       );
   }
 
-  updateUser(uid: string, userForm: IUser) {
+  updateUser(uid: string, userForm: IUser, isCurrentSessionUser: boolean) {
+
     return this.user$.pipe(takeUntil(this.unsubscribe$),// takeUntil: Completa la suscripción cuando `unsubscribe$` emite un valor
       take(1), // Asegura que solo se procese una emisión
       switchMap((resp: User) => {
-        const role = resp.role;
-        const { updatedUserForm, url, headers } = this.getDataToRequest(userForm, role as string, uid);
-
+        const { updatedUserForm, url, headers } = this.getDataToRequest(userForm, resp.role as string, uid);
+        
         return this.http.put(url, updatedUserForm, { headers }).pipe(
           tap((resp: any) => {
-            this.updateDataUser(resp.user);
+            // Solo cambiamos la data actual para el presente usuario para no modificar los datos de profile
+            if (isCurrentSessionUser) { this.updateDataUser(resp.user); }
           })
         );
       }),
@@ -112,17 +183,29 @@ export class UserService implements OnDestroy {
     );
   }
 
+  private shouldChangeRole(currentRole: string, newRole: string): boolean {
+    if (!newRole) { return false; }
+    return currentRole !== newRole;
+  }
+
 
   private getDataToRequest(userForm: IUser, role: string, uid: string) {
-    const updatedUserForm: IUser = { ...userForm, role }; //Copia todas sus propiedades y añade el rol
+    const changeRole = this.shouldChangeRole(role as string, userForm.role as string);
     const url = `${base_url}/users/${uid}`;
     const headers = new HttpHeaders({ 'x-token': this.token });
+    let updatedUserForm: IUser = { ...userForm };
+    if (!changeRole) {
+      // Preparamos los datos para actualizar cuando el role no cambia
+       updatedUserForm = { ...updatedUserForm, role }; //Copia todas sus propiedades y añade el rol actual en BD
+      return { updatedUserForm, url, headers };
+    }
+  
+  // Preparamos los datos para actualizar cuando el nuevo rol y otras propiedades que cambian
     return { updatedUserForm, url, headers };
   }
 
   private updateDataUser(user: IUser): void {
     const { image, google, uid, } = this.user$.getValue();
-
     const updatedUser = new User(
       user.name,
       user.email,
@@ -132,32 +215,34 @@ export class UserService implements OnDestroy {
       user.role,
       uid
     );
-
+    
     this.user$.next(updatedUser);
   }
 
+  searchUserByName(name: string): Observable<User[]> {
+    const url = `${base_url}/searches/schema/users/${name}`;
+    const headers = new HttpHeaders({ 'x-token': this.token });
 
-  login(formData: LoginForm) {
-    const url = `${base_url}/login`;
-
-    return this.http.post(url, formData)
-      .pipe(
-        tap((resp: any) => {
-          localStorage.setItem('token', resp.token)
-        }),
-        catchError((error: HttpErrorResponse) => {
-          return throwError(() => new Error('Error en Conexión'));
-        })
-      );
+    return this.http.get<User[]>(url, { headers }).pipe(
+      map((resp: any) => {
+        return this.returnArrayOfUsers(resp.results)
+      }),
+      catchError((error: HttpErrorResponse) => {
+        return throwError(() => new Error('Error en busqueda', { cause: error.error.msg }))
+      })
+    )
   }
 
-  loginGoogle(token: string) {
-    return this.http.post(`${base_url}/login/google`, { token })
+  deleteUser(id: string): Observable<IDeleteUser> {
+    const url = `${base_url}/users/${id}`;
+    const headers = new HttpHeaders({ 'x-token': this.token });
+
+    return this.http.delete<IDeleteUser>(url, { headers })
       .pipe(
-        tap((resp: any) => {
-          localStorage.setItem('token', resp.token)
+        catchError((error: HttpErrorResponse) => {
+          return throwError(() => new Error('Error al borrar usuario', { cause: error.error.msg }))
         })
-      )
+      );
   }
 
   logout(): void {

@@ -6,3 +6,8 @@ export interface IUser {
     uid?: string;
     img?: string;
 }
+
+export interface IDeleteUser {
+    ok: boolean,
+    msg: string
+}

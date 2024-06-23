@@ -1,0 +1,10 @@
+ .text-back-button {
+    color: #000000;
+    font-family: "Montserrat", sans-serif;
+ }
+ .select-button {
+   width: 100%;
+ }
+ a {
+   cursor: pointer;
+ }

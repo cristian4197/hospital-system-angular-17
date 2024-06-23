@@ -1,30 +1,24 @@
 import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
-import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { UserService } from '../../services/user.service';
 import { LoginForm } from '../../interfaces/login-form';
-
-import { UserGoogle } from '../../models/user.google.model';
 import { GoogleService } from '../../services/google.service';
-
-import Swal from 'sweetalert2';
 import { Subscription } from 'rxjs';
+import { IDataLoginStrategy } from '../../interfaces/login-strategy';
+import { LoginPresenter } from './login.presenter';
 
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterModule, FormsModule, ReactiveFormsModule],
+  imports: [RouterModule,FormsModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
+  providers: [LoginPresenter]
 
 })
 
 export default class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
-
-  private router = inject(Router);
-
-  private userService = inject(UserService);
 
   private googleService = inject(GoogleService);
 
@@ -39,9 +33,9 @@ export default class LoginComponent implements OnInit, AfterViewInit, OnDestroy 
 
   @ViewChild('googleBtn') googleBtn!: ElementRef;
 
-  constructor(private fb: FormBuilder,
-
-    private ngZone: NgZone) { }
+  constructor(
+    private fb: FormBuilder,
+    private loginPresenter: LoginPresenter) { }
 
   async ngOnInit(): Promise<void> {
     this.onRememberEmail();
@@ -49,7 +43,8 @@ export default class LoginComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   ngAfterViewInit(): void {
-    this.googleService.renderButton(this.googleBtn.nativeElement);
+    // Renderiza boton de google
+    this.loginPresenter.renderButtonGoogle(this.googleBtn.nativeElement);
   }
 
   onRememberEmail(): void {
@@ -63,6 +58,7 @@ export default class LoginComponent implements OnInit, AfterViewInit, OnDestroy 
 
   async googleInit(): Promise<void> {
     try {
+      // Inicializa el servicio de google
       const credential = await this.googleService.googleInit();
 
       this.handleCredentialResponse(credential);
@@ -72,72 +68,22 @@ export default class LoginComponent implements OnInit, AfterViewInit, OnDestroy 
 
   }
 
-  private handleCredentialResponse(credential: any) {
-    this.subscriptions.add(
-      this.userService.loginGoogle(credential)
-      .subscribe(
-        {
-          next: (resp) => {
-            this.setUserGoogle(resp);
-            this.ngZone.run(() => this.redirectToPath('/dashboard'));
-          },
-
-          error: (err) => {
-            Swal.fire({
-              title: 'Error!',
-              text: 'Google login failed. Please try again.',
-              icon: 'error',
-              confirmButtonText: 'OK'
-            });
-          }
-        }
-      ));
-  }
-
-  private setUserGoogle(resp: any): void {
-    const { email, name, picture, token } = resp
-    const userGoogle: UserGoogle = {
-      email,
-      name,
-      picture,
-      token
-    }
-    localStorage.setItem('userGoogle', JSON.stringify(userGoogle));
-  }
-
-  private redirectToPath(path: string): void {
-    this.router.navigate([`/${path}`]);
+  private handleCredentialResponse(credential: string) {
+    // Datos para logeo con google
+    const data:IDataLoginStrategy = {
+      token: credential
+    };
+    
+    this.loginPresenter.handleCredentialResponse(data);
   }
 
   onLogin(): void {
-    this.subscriptions.add(
-      this.userService.login(this.loginForm.value as LoginForm)
-      .subscribe({
-        next: (resp) => {
-          this.validateRememberEmail();
-          this.redirectToPath('dashboard');
-        },
-        error: (err) => {
-          Swal.fire({
-            title: 'Error!',
-            text: 'Error en Conexión',
-            icon: 'error',
-            confirmButtonText: 'ok'
-          });
-        },
-        complete: () => { }
-      })
-    );
-  }
+     // Datos para logeo con usuario y password
+    const data:IDataLoginStrategy = {
+      loginForm: this.loginForm.value as LoginForm
+    };
 
-
-
-  private validateRememberEmail(): void {
-    if (this.loginForm.get('remember')?.value) {
-      localStorage.setItem('email', this.loginForm.get('email')?.value as string);
-    } else {
-      localStorage.removeItem('email');
-    }
+    this.loginPresenter.login(data, this.loginForm.get('email') as AbstractControl);
   }
 
   ngOnDestroy(): void {

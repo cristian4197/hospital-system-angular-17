@@ -1,40 +1,26 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { UserService } from '../../services/user.service';
-
-import Swal from 'sweetalert2';
-import { Subscription } from 'rxjs';
+import { RouterModule } from '@angular/router';
+import { RegisterPresenter } from './register.presenter';
 
 @Component({
   selector: 'app-register',
   standalone: true,
   imports: [RouterModule, ReactiveFormsModule, CommonModule],
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.css']
+  styleUrls: ['./register.component.css'],
+  providers: [RegisterPresenter]
 })
-export default class RegisterComponent implements OnDestroy {
+export default class RegisterComponent {
   public formSubmitted = false;
 
 
-  public registerForm = this.fb.group({
-    name: ['Cristian', [ Validators.required, Validators.minLength(3)]],
-    email: ['csv@gmail.com', [ Validators.required, Validators.email ]],
-    password: ['1234', [ Validators.required ]],
-    passwordConfirm: ['1234', [ Validators.required ]],
-    terms: [ true, [ Validators.required ]],
-  }, {
-    // se utiliza para agregar validaciones personalizadas que no se aplican a un campo de entrada específico
-    validators: this.samePasswords('password', 'passwordConfirm')
-  });
+  public registerForm: FormGroup = this.initializeForm();
 
-  private router = inject(Router);
-
-  private subscriptions: Subscription = new Subscription();
 
   constructor (private fb: FormBuilder, 
-               private userService: UserService
+               private registerPresenter: RegisterPresenter
   ) {
 
   }
@@ -46,47 +32,20 @@ export default class RegisterComponent implements OnDestroy {
       return;
     }
 
-    this.subscriptions.add(
-      this.userService.createUser(this.registerForm.value)
-        .subscribe({
-          next: (resp) => {
-            this.renderSwalAlertSuccess(true);
-
-             this.redirectToPath('dashboard');
-          },
-          error: (err) => {
-            this.renderSwalAlertSuccess(false);
-
-          },
-          complete: () => console.info('complete') 
-        })
-    );
-    
+    this.registerPresenter.createUser(this.registerForm);    
   }
 
-  private renderSwalAlertSuccess(isSuccess: boolean, error?: any): void {
-    if(isSuccess) {
-      Swal.fire({
-        title: 'Felicidades',
-        text: 'Registro Exitoso',
-        icon: 'success',
-        confirmButtonText: 'Ok',
-        timer: 1000
-      });
-      return;
-    }
-
-    Swal.fire({
-      title: 'Error!',
-      text: error.error.msg,
-      icon: 'error',
-      confirmButtonText: 'Ok'
+  private initializeForm(): FormGroup {
+    return this.fb.group({
+      name: ['', [ Validators.required, Validators.minLength(3)]],
+      email: ['', [ Validators.required, Validators.email ]],
+      password: ['', [ Validators.required ]],
+      passwordConfirm: ['', [ Validators.required ]],
+      terms: [ true, [ Validators.required ]],
+    }, {
+      // se utiliza para agregar validaciones personalizadas que no se aplican a un campo de entrada específico
+      validators: this.samePasswords('password', 'passwordConfirm')
     });
-    
-  }
-
-  private redirectToPath(path: string): void {
-    this.router.navigate([`/${path}`]);
   }
 
   isInputInvalid(name: string) : boolean {
@@ -123,10 +82,6 @@ export default class RegisterComponent implements OnDestroy {
         });
       }
     }
-  }
-
-  ngOnDestroy(): void {
-   this.subscriptions.unsubscribe();
   }
 
 }

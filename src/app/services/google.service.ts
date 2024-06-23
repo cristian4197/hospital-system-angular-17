@@ -21,18 +21,20 @@ export class GoogleService {
     googleInit(): Promise<string> {
         return new Promise((resolve, reject) => {
             try {
-                google.accounts.id.initialize({
-                    client_id: GoogleCredential.ClientId,
-                    callback: (response: any) => {
-                        if( response && response.credential) {
-                            this.setUserGoogleAuthenticathed();
-                            resolve(response.credential);
-                        } else {
-                            reject(new Error('Failed to retrieve Google credential.'));
+                if(google && google.accounts){
+                    google.accounts.id.initialize({
+                        client_id: GoogleCredential.ClientId,
+                        callback: (response: any) => {
+                            if( response && response.credential) {
+                                this.setUserGoogleAuthenticathed();
+                                resolve(response.credential);
+                            } else {
+                                reject(new Error('Failed to retrieve Google credential.'));
+                            }
+                            
                         }
-                        
-                    }
-                });
+                    });
+                }
             } catch (error) {
                 reject(error);
             }

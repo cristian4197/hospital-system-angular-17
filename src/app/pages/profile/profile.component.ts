@@ -33,7 +33,6 @@ export default class ProfileComponent implements OnInit, OnDestroy {
     private uploadFileService: UploadFileService) { }
 
   ngOnInit(): void {
-
     this.setUserData()
     this.setFormValuesInitial();
   }
@@ -75,8 +74,9 @@ export default class ProfileComponent implements OnInit, OnDestroy {
   }
 
   private proccessReponseUpdate(uid: string, user: IUser) {
+    const isCurrentSessionUser = true;
     this.subscriptions.add(
-      this.userService.updateUser(uid, user).subscribe(
+      this.userService.updateUser(uid, user, isCurrentSessionUser).subscribe(
         {
           next: (resp) => {
             Swal.fire({
@@ -124,9 +124,10 @@ export default class ProfileComponent implements OnInit, OnDestroy {
   }
 
   uploadImageChanged() {
+    const isCurrentSessionUser = true;
     this.uploadFileService.updatePhoto(this.imageToUpload, 'users', this.user.uid as string)
       .then(resp => {
-        this.userService.updateUserImage(resp.nameFile);
+        this.userService.updateUserImage(resp.nameFile, isCurrentSessionUser);
         Swal.fire({
           title: 'Felicidades',
           text: 'Actualización de Perfil Exitosa',

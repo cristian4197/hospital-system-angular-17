@@ -1,0 +1,83 @@
+<hr>
+<div class="row mb-3">
+    <div class="col">
+        <a routerLink="../user-list">
+            <img src="../../../../../assets/images/svg/chevron-left-solid.svg" alt="" width="25" height="25">
+           <span class="text-back-button"><strong>Atrás</strong></span>
+        </a>
+        
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Actualización de Usuario</h4>
+                <h6 class="card-subtitle">Datos Actuales</h6>
+                <form class="form p-t-20" [formGroup]="updateForm"
+                (ngSubmit)="updateUser()">
+                    <div class="form-group">
+                        <label for="exampleInputuname">Usuario</label>
+                        <div class="input-group">
+                            <div class="input-group-addon"><i class="ti-user"></i></div>
+                            <input type="text" class="form-control" id="exampleInputuname" placeholder="Usuario" formControlName="user">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleInputEmail1">Correo</label>
+                        <div class="input-group">
+                            <div class="input-group-addon"><i class="ti-email"></i></div>
+                            <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Ingrese su correo" formControlName="email">
+                        </div>
+                    </div>
+                    @if(currentUserSession.role === 'admin') {
+                        <div class="form-group">
+                            <label for="role">Rol</label>
+                            <div class="dropdown">
+                                <button class="btn btn-primary dropdown-toggle select-button" type="button" data-toggle="dropdown" aria-expanded="false" id="role" >
+                                  {{ currentRole }}
+                                </button>
+                                <div class="dropdown-menu">
+                                    @for (role of roles; track $index) {
+                                        <a class="dropdown-item" (click)="currentRoleOption(role)">{{roleDescriptionMap[role]}}</a>
+                                    }
+                                </div>
+                              </div>
+    
+                        </div>
+                    }
+                    <button type="submit" class="btn btn-success btn-block waves-effect waves-light m-r-10"><i class="fa fa-save"></i> Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+
+      
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Avatar</h4>
+                <h6 class="card-subtitle">Imagen del usuario</h6>
+                <div class="container-image d-flex justify-content-center">
+                    @if( !imageTemp ) {
+                        <img [src]="user?.image" alt="Imagen de usuario" width="200" height="200" >
+                    }@else {
+                        <img [src]="imageTemp" alt="Imagen de usuario" width="200" height="200">
+                    }
+                </div>
+
+                <input type="file" (change)="changeFile($event)">
+
+                <br><br>
+
+                <button type="button"
+                        class="btn btn-success btn-block waves-effect waves-light m-r-10"
+                        [disabled]="!imageToUpload"
+                        (click)="uploadImageChanged()">
+                        <i class="fa fa-save"></i> Cambiar Imagen
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,4 +1,5 @@
 import { Routes } from "@angular/router";
+import { usersChildRoutes } from "./user.routes";
 
 export const dashboardChildRoutes: Routes = [
     {
@@ -48,6 +49,29 @@ export const dashboardChildRoutes: Routes = [
         loadComponent: () => import('../pages/profile/profile.component'),
         data: {
             title: 'Profile'
+        }
+    },
+    // CRUDS
+    {
+        path: 'users',
+        loadComponent: () => import('../pages/cruds/user/user.component'),
+        data: {
+            title: 'Usuarios de Aplicación'
+        },
+        children: usersChildRoutes
+    },
+    {
+        path: 'doctors',
+        loadComponent: () => import('../pages/cruds/doctor/doctor.component'),
+        data: {
+            title: 'Doctores de Aplicación'
+        }
+    },
+    {
+        path: 'hospitals',
+        loadComponent: () => import('../pages/cruds/hospital/hospital.component'),
+        data: {
+            title: 'Hospitales de aplicación'
         }
     },
     {

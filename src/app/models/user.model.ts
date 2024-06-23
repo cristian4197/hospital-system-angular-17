@@ -48,7 +48,7 @@ export class User {
     }
 
     get image(): string {
-        if(this._img?.includes('https')) {
+        if(this._img?.includes('https') || this._img?.includes('http')) {
             return this._img;
         }
         

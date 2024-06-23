@@ -14,32 +14,59 @@
                     </a>
                     <ul aria-expanded="false" class="collapse" >
                         <li><a routerLinkActive="active" routerLink="profile">My Profile </a></li>
-                        <li><a href="javascript:void()">My Balance</a></li>
+                        <!-- <li><a href="javascript:void()">My Balance</a></li>
                         <li><a href="javascript:void()">Inbox</a></li>
-                        <li><a routerLinkActive="active" routerLink="account-settings">Account Setting</a></li>
+                        <li><a routerLinkActive="active" routerLink="account-settings">Account Setting</a></li> -->
                         <li><a class="cursor" (click)="logout()">Logout</a></li>
                     </ul>
                 </li>
                 <li class="nav-devider"></li>
-                <li class="nav-small-cap">PERSONAL</li>
+                <li class="nav-small-cap">Menú</li>
                 @for (menu of menuItem; track $index) {
-                    <li> 
-                        <a class="has-arrow waves-effect waves-dark" aria-expanded="false">
-                            <i [ngClass]="menu.icon"></i>
-                            <span class="hide-menu">{{ menu.title }}
-                                <span class="label label-rouded label-themecolor pull-right">{{ menu.submenu.length }}</span>
-                            </span>
-                        </a>
-                        <ul aria-expanded="false" class="collapse">
-                            @for (submenu of menu.submenu; track $index) {
-                                <li><a [routerLink]="submenu.url"
-                                    routerLinkActive="active"
-                                    [routerLinkActiveOptions]="{ exact: true}">{{ submenu.title }} </a></li>
-                            }
-                        </ul>
-                    </li>
+                    @if(menu.title !== 'Dashboard') {
+                        <li> 
+                            <a class="has-arrow waves-effect waves-dark" aria-expanded="false">
+                                <i [ngClass]="menu.icon"></i>
+                                @if(user.role !=='USER_ROLE') {
+                                    <span class="hide-menu">{{ menu.title }}
+                                        <!-- <span class="label label-rouded label-themecolor pull-right">{{ menu.submenu.length }}</span> -->
+                                    </span>
+                                }@else {
+                                    <span class="hide-menu">Opciones</span>
+                                }
+                                
+                            </a>
+                            <ul aria-expanded="false" class="collapse">
+                                @if(user.role !=='USER_ROLE') {
+                                    @for (submenu of menu.submenu; track $index) {
+                                        <li><a [routerLink]="submenu.url"
+                                            routerLinkActive="active"
+                                            [routerLinkActiveOptions]="{ exact: true}">
+                                                @if(user.role ==='admin' || user.role === 'viewer') {
+                                                    {{submenu.title}}
+                                                }
+                                                @if(user.role ==='adminHospital' && submenu.title === 'Hospitals') {
+                                                    {{submenu.title}}
+                                                }
+                                                @if(user.role ==='adminDoctors' && submenu.title === 'Doctors') {
+                                                    {{submenu.title}}
+                                                }
+                                                @if(user.role ==='adminUsers' && submenu.title === 'Users') {
+                                                    {{submenu.title}}
+                                                }
+                                            
+                                            </a>
+                                        </li>
+                                    }
+                                }@else {
+                                    <li>Sin opciones asignadas</li>
+                                }
+                               
+                            </ul>
+                        </li>
+                    }
+                   
                 }
-               
             </ul>
         </nav>
         <!-- End Sidebar navigation -->
