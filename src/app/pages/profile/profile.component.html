@@ -20,6 +20,23 @@
                            [readOnly]="user.google">
                         </div>
                     </div>
+
+                    @if(currentUserSession.role === 'admin') {
+                        <div class="form-group">
+                            <label for="role">Rol</label>
+                            <div class="dropdown">
+                                <button class="btn btn-primary dropdown-toggle select-button" type="button" data-toggle="dropdown" aria-expanded="false" id="role" >
+                                  {{ currentRole }}
+                                </button>
+                                <div class="dropdown-menu">
+                                    @for (role of roles; track $index) {
+                                        <a class="dropdown-item" (click)="currentRoleOption(role)">{{roleDescriptionMap[role]}}</a>
+                                    }
+                                </div>
+                              </div>
+    
+                        </div>
+                    }
                     <button type="submit" class="btn btn-success btn-block waves-effect waves-light m-r-10" [disabled]="profileForm.invalid"><i class="fa fa-save"></i> Guardar Cambios</button>
                 </form>
             </div>

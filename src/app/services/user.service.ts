@@ -29,6 +29,8 @@ export class UserService implements OnDestroy {
 
   private user$: BehaviorSubject<User> = new BehaviorSubject(new User('', ''));//Para manejar la data del usuario y que desde otros componente se suscriban al observable y puedan obtener el valor actualizado
 
+  private _isCurrentRoleChanged = false;
+  
   get user(): Observable<User> {
     return this.user$.asObservable();
   }
@@ -37,6 +39,10 @@ export class UserService implements OnDestroy {
 
   get token(): string {
     return localStorage.getItem('token') || '';
+  }
+
+  get isCurrentRoleChanged(): boolean {
+    return this._isCurrentRoleChanged;
   }
 
 
@@ -188,7 +194,6 @@ export class UserService implements OnDestroy {
     return currentRole !== newRole;
   }
 
-
   private getDataToRequest(userForm: IUser, role: string, uid: string) {
     const changeRole = this.shouldChangeRole(role as string, userForm.role as string);
     const url = `${base_url}/users/${uid}`;
@@ -201,6 +206,7 @@ export class UserService implements OnDestroy {
     }
   
   // Preparamos los datos para actualizar cuando el nuevo rol y otras propiedades que cambian
+    this._isCurrentRoleChanged = true;
     return { updatedUserForm, url, headers };
   }
 

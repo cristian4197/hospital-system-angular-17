@@ -5,12 +5,14 @@ import { UserService } from '../../services/user.service';
 import { IUser } from '../../interfaces/user';
 import Swal from 'sweetalert2';
 import { Subscription } from 'rxjs';
-import { UploadFileService } from '../../services/upload-file.service';
+import { ProfilePresenter } from './profile.presenter';
+import { roleDescriptionMap, roles } from '../../const/roles.const';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
   imports: [ReactiveFormsModule],
+  providers: [ProfilePresenter],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
@@ -19,7 +21,8 @@ export default class ProfileComponent implements OnInit, OnDestroy {
 
   public profileForm = this.fb.group({
     user: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]]
+    email: ['', [Validators.required, Validators.email]],
+    role: ['',[Validators.required]]
   });
 
   public imageToUpload!: File;
@@ -28,13 +31,38 @@ export default class ProfileComponent implements OnInit, OnDestroy {
 
   public imageTemp: any;
 
+  public currentUserSession!: User;
+
+  public roles: string[] = roles;
+
+  public roleDescriptionMap: { [key: string]: string } = roleDescriptionMap;
+
+
+  get currentRole(): string{
+    const role = this.roleDescriptionMap[this.profileForm.get('role')?.value as string];
+    return role || 'Seleccione Rol';
+  }
+
+
   constructor(private fb: FormBuilder,
     private userService: UserService,
-    private uploadFileService: UploadFileService) { }
+    private profilePresenter: ProfilePresenter) { }
 
-  ngOnInit(): void {
+  ngOnInit(): void {    
     this.setUserData()
     this.setFormValuesInitial();
+    this.getCurrentUserSession();
+  }
+
+  getCurrentUserSession(): void {
+    this.subscriptions.add(
+      this.profilePresenter.getCurrentUserSession().subscribe({
+        next: (user: User) => {
+          this.currentUserSession = user;
+        },
+        error: (error) => { console.error(error); }
+      })
+    );
   }
 
   private setUserData(): void {
@@ -50,23 +78,20 @@ export default class ProfileComponent implements OnInit, OnDestroy {
   private setFormValuesInitial(): void {
     this.profileForm.patchValue({
       user: this.user.name,
-      email: this.user.email
+      email: this.user.email,
+      role: this.user.role
     });
   }
 
   updateUser(): void {
     const user: IUser = {
       email: this.profileForm.get('email')?.value as string,
-      name: this.profileForm.get('user')?.value as string
+      name: this.profileForm.get('user')?.value as string,
+      role: this.profileForm.get('role')?.value as string
     }
 
     if (!this.user.uid) {
-      Swal.fire({
-        title: 'Error!',
-        text: 'Error en Actualización',
-        icon: 'error',
-        confirmButtonText: 'OK'
-      });
+      this.profilePresenter.errorGeneric();
       return;
     }
 
@@ -76,23 +101,13 @@ export default class ProfileComponent implements OnInit, OnDestroy {
   private proccessReponseUpdate(uid: string, user: IUser) {
     const isCurrentSessionUser = true;
     this.subscriptions.add(
-      this.userService.updateUser(uid, user, isCurrentSessionUser).subscribe(
+      this.profilePresenter.updateUser(uid, user, isCurrentSessionUser).subscribe(
         {
           next: (resp) => {
-            Swal.fire({
-              title: 'Felicidades',
-              text: 'Actualización Exitosa',
-              icon: 'success',
-              confirmButtonText: 'Ok'
-            });
+            this.profilePresenter.updateUserSucess();
           },
           error: (error) => {
-            Swal.fire({
-              title: error.message,
-              text: error.cause,
-              icon: 'error',
-              confirmButtonText: 'OK'
-            });
+            this.profilePresenter.errorToUpdateUser(error.message, error.cause as string);
           }
         }
       )
@@ -125,25 +140,19 @@ export default class ProfileComponent implements OnInit, OnDestroy {
 
   uploadImageChanged() {
     const isCurrentSessionUser = true;
-    this.uploadFileService.updatePhoto(this.imageToUpload, 'users', this.user.uid as string)
+    this.profilePresenter.updatePhoto(this.imageToUpload, 'users', this.user.uid as string)
       .then(resp => {
-        this.userService.updateUserImage(resp.nameFile, isCurrentSessionUser);
-        Swal.fire({
-          title: 'Felicidades',
-          text: 'Actualización de Perfil Exitosa',
-          icon: 'success',
-          confirmButtonText: 'Ok'
-        });
+        this.profilePresenter.updateUserImage(resp.nameFile, isCurrentSessionUser);
+        this.profilePresenter.updateProfileSucess();
       })
       .catch(error => {
-        Swal.fire({
-          title: 'Error!',
-          text: 'Error al actualizar perfil',
-          icon: 'error',
-          confirmButtonText: 'OK'
-        });
+        this.profilePresenter.errorToupdateProfile();
       })
 
+  }
+
+  currentRoleOption(opcion: string) {
+    this.profileForm.get('role')?.setValue(opcion);
   }
 
   ngOnDestroy(): void {

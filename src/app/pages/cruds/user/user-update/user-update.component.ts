@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { User } from '../../../../models/user.model';
 import { IUser } from '../../../../interfaces/user';
 import { UserUpdatePresenter } from './user-update.presenter';
+import { roleDescriptionMap, roles } from '../../../../const/roles.const';
 
 @Component({
   selector: 'app-user-update',
@@ -28,21 +29,9 @@ export default class UserUpdateComponent implements OnInit, OnDestroy {
     role: ['',[Validators.required]]
   });
 
-  public roles = [
-    'admin',//Puede modificar y eliminar todo
-    'adminHospital',//Puede modificar hospitales pero no eliminar
-    'adminDoctors',//Puede modificar doctores pero no eliminar
-    'adminUsers',//Puede modificar usuarios pero no eliminar
-    'viewer'//Puede visualizar unicamente
-  ];
+  public roles: string[] = roles;
 
-  public roleDescriptionMap: { [key: string]: string } = {
-    'admin' : 'Admnistrador de Sistema',
-    'adminHospital': 'Admnistrador de hospitales',
-    'adminDoctors': 'Admnistrador de Doctores',
-    'adminUsers': 'Admnistrador de Usuarios',
-    'viewer': 'Solo Vista'    
-  };
+  public roleDescriptionMap: { [key: string]: string } = roleDescriptionMap;
 
   public user!: User;
 
@@ -182,9 +171,6 @@ export default class UserUpdateComponent implements OnInit, OnDestroy {
 
   currentRoleOption(opcion: string) {
     this.updateForm.get('role')?.setValue(opcion);
-    console.log(this.updateForm.get('role')?.value);
-    
-    
   }
 
   ngOnDestroy(): void {
