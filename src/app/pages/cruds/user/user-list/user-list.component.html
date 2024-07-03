@@ -27,6 +27,9 @@
             <div class="card-body">
                 <h4 class="card-title">Total de Usuarios: {{this.totalUsers}}</h4>
                 <h6 class="card-subtitle">Listado de Usuarios registrados en la aplicación</h6>
+                <div class="card-button-add d-flex justify-content-end">
+                    <button class="btn btn-primary mb-3" (click)="showModalAddUsers()">Nuevo Usuario</button>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-bordered">
                         <thead>
@@ -101,6 +104,8 @@
 <!-- Table User End-->
 }
 
-<!-- MODAL -->
+<!-- MODALS -->
+<app-modal-create-user [openModal]="showModalAddUser" (closeModalEmit)="closeModalAddUsers()" (refreshViewUserEmit)="refreshListUser()"></app-modal-create-user>
+
 <app-user-delete [user]="currentUserSelected" (refreshViewListUsers)="refreshListUser()">
 </app-user-delete>

@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
-import { UserService } from '../../../../services/user.service';
 import { User } from '../../../../models/user.model';
 import { Subscription } from 'rxjs';
 import { IDeleteUser } from '../../../../interfaces/user';
@@ -25,7 +24,7 @@ export default class UserDeleteComponent implements OnChanges, OnDestroy {
 
   private subscription: Subscription = new Subscription();
 
-  constructor(private userService: UserService, private userDeletePresenter: UserDeletePresenter) { }
+  constructor(private userDeletePresenter: UserDeletePresenter) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['user']) { return; }

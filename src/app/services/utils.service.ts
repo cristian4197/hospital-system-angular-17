@@ -10,4 +10,8 @@ export class UtilService {
             tooltipElement.remove();
         }
     }
+
+    removeNode(identity: string): void {
+        document.querySelector(identity)?.remove();
+    }
 }

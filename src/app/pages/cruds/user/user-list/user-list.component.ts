@@ -7,11 +7,12 @@ import { RouterModule } from '@angular/router';
 import UserDeleteComponent from '../user-delete/user-delete.component';
 import { CommonModule } from '@angular/common';
 import { UserListPresenter } from './user-list.presenter';
+import { ModalCreateUserComponent } from '../../../../components/modal-create-user/modal-create-user.component';
 
 @Component({
   selector: 'app-user',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, UserDeleteComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, UserDeleteComponent, ModalCreateUserComponent],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.css',
   providers: [UserListPresenter]
@@ -34,6 +35,8 @@ export default class UserComponent implements OnInit, OnDestroy, AfterViewInit {
   private tooltipElement!: HTMLElement | null;
 
   public currentUserSelected!: User;
+
+  showModalAddUser = false;
 
   constructor(private userListPresenter: UserListPresenter) { }
 
@@ -151,11 +154,17 @@ export default class UserComponent implements OnInit, OnDestroy, AfterViewInit {
 
   }
 
-
   refreshListUser(): void {
     this.setUsers();
   }
 
+  showModalAddUsers(): void {
+    this.showModalAddUser = true;
+  }
+
+  closeModalAddUsers(): void {
+    this.showModalAddUser = false;
+  }
 
   ngOnDestroy(): void {
     this.clearTooltip();

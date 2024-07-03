@@ -11,7 +11,9 @@
     height: calc(100vh - 100px);
 }
 
-.username {
-    color: #455a64;
-    font-weight: bold;
+.modal-content {
+    width: 600px;
+    @media (max-width: 767.98px) {
+        width: 300px;
+    }
 }
