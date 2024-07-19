@@ -1,0 +1,19 @@
+/* TODO: VALIDAR PORQUE ESTA MODAL NO ESTA TOMANDO LOS ESTILOS */
+.close:not(:disabled):not(.disabled) {
+    /* por algun motivo no toma las clases de boostrap para la X */
+    cursor: pointer;
+}
+
+.modal-dialog.modal-dialog-centered {
+    /* Lo centramos manualmente por algun motivo no toma las clases de boostrap */
+    display: grid;
+    place-content: center;
+    height: calc(100vh - 100px);
+}
+
+.modal-content {
+    width: 600px;
+    @media (max-width: 767.98px) {
+        width: 300px;
+    }
+}

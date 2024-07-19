@@ -2,17 +2,20 @@ import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { User } from '../../../../models/user.model';
 import { Observable, Subscription, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
 import { IResponseDataUser } from '../../../../interfaces/reponse-get-user';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import UserDeleteComponent from '../user-delete/user-delete.component';
+import ModalDeleteUserComponent from '../modal-delete-user/modal-delete-user.component';
 import { CommonModule } from '@angular/common';
 import { UserListPresenter } from './user-list.presenter';
-import { ModalCreateUserComponent } from '../../../../components/modal-create-user/modal-create-user.component';
+import { ModalCreateUserComponent } from '../modal-create-user/modal-create-user.component';
+import { InputSearchComponent } from '../../../../components/input-search/input-search.component';
+import { roleDescriptionMap } from '../../../../const/roles.const';
+import { SpinnerComponent } from '../../../../components/spinner/spinner.component';
 
 @Component({
   selector: 'app-user',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, UserDeleteComponent, ModalCreateUserComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, ModalDeleteUserComponent, ModalCreateUserComponent, InputSearchComponent, SpinnerComponent],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.css',
   providers: [UserListPresenter]
@@ -30,7 +33,7 @@ export default class UserComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public load: boolean = false;
 
-  searchControl: FormControl = new FormControl();
+  // searchControl: FormControl = new FormControl();
 
   private tooltipElement!: HTMLElement | null;
 
@@ -38,7 +41,21 @@ export default class UserComponent implements OnInit, OnDestroy, AfterViewInit {
 
   showModalAddUser = false;
 
-  constructor(private userListPresenter: UserListPresenter) { }
+  placeHolderSearchInput = 'Buscando Usuarios...';
+
+  public roleDescriptionMap: { [key: string]: string } = roleDescriptionMap;
+
+  public form = this.fb.group({
+    searchControl: ['']
+  });
+
+  get searchControl(): FormControl {
+    return this.form.get('searchControl') as FormControl;
+  }
+
+
+
+  constructor(private userListPresenter: UserListPresenter, private fb: FormBuilder) { }
 
   ngOnInit(): void {
     this.setUsers();
@@ -46,7 +63,7 @@ export default class UserComponent implements OnInit, OnDestroy, AfterViewInit {
     this.getCurrentUserSession();
   }
 
-  getCurrentUserSession(): void {
+  private getCurrentUserSession(): void {
     this.subscriptions.add(
       this.userListPresenter.getCurrentUserSession().subscribe({
         next: (user: User) => {
@@ -102,7 +119,7 @@ export default class UserComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     };
 
-    if (this.from > 0 && this.from > this.totalUsers) {
+    if (this.from > 0 && this.from > this.totalUsers - 1) {
       // Si el from se paso lo dejamos en la pagina actual
       this.from = currentFrom;
       return;
@@ -148,6 +165,7 @@ export default class UserComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
   openModalDeleteUser(event: Event, user: User) {
+    //Abrir modal de eliminación de usuario
     this.userListPresenter.openModal('#deleteUserModal');
 
     this.currentUserSelected = user;

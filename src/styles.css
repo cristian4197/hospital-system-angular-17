@@ -14,6 +14,18 @@
     width: 100px;
 }
 
+.w70{
+    width: 70px;
+}
+
 .dropdown-menu.show a {
     cursor: pointer;
+}
+
+.show-loader {
+    display: flex!important;
+}
+
+.hide-loader {
+    display: none!important;
 }

@@ -45,28 +45,6 @@
 
     <div class="col-md-6">
         <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Avatar</h4>
-                <h6 class="card-subtitle">Imagen del usuario</h6>
-                <div class="container-image d-flex justify-content-center">
-                    @if( !imageTemp ) {
-                        <img [src]="user.image" alt="Imagen de usuario" width="200" height="200" >
-                    }@else {
-                        <img [src]="imageTemp" alt="Imagen de usuario" width="200" height="200">
-                    }
-                </div>
-
-                <input type="file" (change)="changeFile($event)">
-
-                <br><br>
-
-                <button type="button"
-                        class="btn btn-success btn-block waves-effect waves-light m-r-10"
-                        [disabled]="!imageToUpload"
-                        (click)="uploadImageChanged()">
-                        <i class="fa fa-save"></i> Cambiar Imagen
-                </button>
-            </div>
-        </div>
+            <app-card-image [imageSrc]="imageSrc" (changeInputEmit)="changeFile($event)" (clickEmit)="uploadImageChanged()"></app-card-image>
     </div>
 </div>

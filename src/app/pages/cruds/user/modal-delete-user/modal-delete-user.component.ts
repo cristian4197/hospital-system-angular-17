@@ -3,18 +3,18 @@ import { User } from '../../../../models/user.model';
 import { Subscription } from 'rxjs';
 import { IDeleteUser } from '../../../../interfaces/user';
 import Swal from 'sweetalert2';
-import { UserDeletePresenter } from './user-delete.presenter';
+import { ModalDeleteUserPresenter } from './modal-delete-user.presenter';
 declare var $: any;
 
 @Component({
-  selector: 'app-user-delete',
+  selector: 'app-modal-delete-user',
   standalone: true,
   imports: [],
-  templateUrl: './user-delete.component.html',
-  styleUrl: './user-delete.component.css',
-  providers: [UserDeletePresenter]
+  templateUrl: './modal-delete-user.component.html',
+  styleUrl: './modal-delete-user.component.css',
+  providers: [ModalDeleteUserPresenter]
 })
-export default class UserDeleteComponent implements OnChanges, OnDestroy {
+export default class ModalDeleteUserComponent implements OnChanges, OnDestroy {
 
   @Input() user!: User;
 
@@ -24,7 +24,7 @@ export default class UserDeleteComponent implements OnChanges, OnDestroy {
 
   private subscription: Subscription = new Subscription();
 
-  constructor(private userDeletePresenter: UserDeletePresenter) { }
+  constructor(private modalDeleteUserPresenter: ModalDeleteUserPresenter) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['user']) { return; }
@@ -37,10 +37,10 @@ export default class UserDeleteComponent implements OnChanges, OnDestroy {
 
   deleteUserById(): void {
     this.subscription.add(
-      this.userDeletePresenter.deleteUser(this.currentUser.uid as string).subscribe({
+      this.modalDeleteUserPresenter.deleteUser(this.currentUser.uid as string).subscribe({
         next: (resp: IDeleteUser) => {
           if (resp.ok) {
-            this.userDeletePresenter.successfulDeletion();
+            this.modalDeleteUserPresenter.successfulDeletion();
 
             this.closeModal();
 
@@ -48,14 +48,14 @@ export default class UserDeleteComponent implements OnChanges, OnDestroy {
           }
         },
         error: (error: Error) => {
-          this.userDeletePresenter.errorDeleting(error);
+          this.modalDeleteUserPresenter.errorDeleting(error);
         }
       })
     );
   }
 
   private closeModal(): void {
-      this.userDeletePresenter.closeModal('#deleteUserModal');
+      this.modalDeleteUserPresenter.closeModal('#deleteUserModal');
   }
 
   private refreshViewListUser(): void {

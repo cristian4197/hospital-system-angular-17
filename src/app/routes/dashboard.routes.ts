@@ -1,5 +1,6 @@
 import { Routes } from "@angular/router";
 import { usersChildRoutes } from "./user.routes";
+import { hospitalChildRoutes } from "./hospital.routes";
 
 export const dashboardChildRoutes: Routes = [
     {
@@ -72,7 +73,8 @@ export const dashboardChildRoutes: Routes = [
         loadComponent: () => import('../pages/cruds/hospital/hospital.component'),
         data: {
             title: 'Hospitales de aplicación'
-        }
+        },
+        children: hospitalChildRoutes
     },
     {
         path: '**',

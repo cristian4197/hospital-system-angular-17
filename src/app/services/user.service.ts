@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Injectable, NgZone, OnDestroy, inject } from '@angular/core';
-import { RegisterForm } from '../interfaces/register-form';
+import { IRegisterForm } from '../interfaces/register-form';
 import { environment } from '../../environments/environment';
 import { catchError, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject, of, throwError } from 'rxjs';
@@ -11,7 +11,11 @@ import { GoogleService } from './google.service';
 import { IDeleteUser, IUser } from '../interfaces/user';
 import Swal from 'sweetalert2';
 import { ErrorCodes } from '../const/error.const';
-import { IResponseDataUser } from '../interfaces/reponse-get-user';
+import { IResponseBackDataUser, IResponseDataUser } from '../interfaces/reponse-get-user';
+import { adapterBackResponseUser } from '../utils/utils';
+import { IToKenValidateResponse } from '../interfaces/token-validate-response';
+import { ICreateUserResponse } from '../interfaces/create-user-response';
+import { IUpdateUserResponse } from '../interfaces/update-user-response';
 
 const base_url = environment.base_url;
 declare const google: any;
@@ -30,7 +34,7 @@ export class UserService implements OnDestroy {
   private user$: BehaviorSubject<User> = new BehaviorSubject(new User('', ''));//Para manejar la data del usuario y que desde otros componente se suscriban al observable y puedan obtener el valor actualizado
 
   private _isCurrentRoleChanged = false;
-  
+
   get user(): Observable<User> {
     return this.user$.asObservable();
   }
@@ -98,9 +102,10 @@ export class UserService implements OnDestroy {
   }
 
   private returnArrayOfUsers(users: User[]): User[] {
+    const responseBackUsers = adapterBackResponseUser(users);
     // Hacemos esto para obtener la url de la imagen correctamente
     // debido a que al instanciar new User se arma correctamente la url
-    return users.map((userData: any) => new User(
+    return responseBackUsers.map((userData: IResponseBackDataUser) => new User(
       userData.name,
       userData.email,
       '',
@@ -112,15 +117,15 @@ export class UserService implements OnDestroy {
   }
 
   tokenValidate(): Observable<boolean> {
-
     const url = `${base_url}/login/renew`;
-    return this.http.get(url, {
+    return this.http.get<IToKenValidateResponse>(url, {
       headers: {
         'x-token': this.token
       }
     }).pipe(
-      map((resp: any) => {
+      map((resp: IToKenValidateResponse) => {
         this.setUser(resp);
+        
         localStorage.setItem('token', resp.token);
 
         return true;
@@ -129,12 +134,12 @@ export class UserService implements OnDestroy {
     );
   }
 
-  setUser(resp: any): void {
+  setUser(resp: IToKenValidateResponse): void {
     const user = this.getUserInstance(resp.user);
     this.user$.next(user);
   }
 
-  private getUserInstance(user: any): User {
+  private getUserInstance(user: IResponseBackDataUser): User {
     const { name, email, role, google, img, uid } = user;
     return new User(name, email, '', img, google, role, uid);
   }
@@ -155,12 +160,12 @@ export class UserService implements OnDestroy {
   }
 
 
-  createUser(formData: RegisterForm) {
+  createUser(formData: IRegisterForm): Observable<ICreateUserResponse> {
     const url = `${base_url}/users`;
 
-    return this.http.post(url, formData)
+    return this.http.post<ICreateUserResponse>(url, formData)
       .pipe(
-        tap((resp: any) => {
+        tap((resp: ICreateUserResponse) => {
           localStorage.setItem('token', resp.token)
         }),
         catchError((error: HttpErrorResponse) => {
@@ -175,11 +180,11 @@ export class UserService implements OnDestroy {
       take(1), // Asegura que solo se procese una emisión
       switchMap((resp: User) => {
         const { updatedUserForm, url, headers } = this.getDataToRequest(userForm, resp.role as string, uid);
-        
-        return this.http.put(url, updatedUserForm, { headers }).pipe(
-          tap((resp: any) => {
+
+        return this.http.put<IUpdateUserResponse>(url, updatedUserForm, { headers }).pipe(
+          tap((resp: IUpdateUserResponse) => {
             // Solo cambiamos la data actual para el presente usuario para no modificar los datos de profile
-            if (isCurrentSessionUser) { this.updateDataUser(resp.user); }
+            if (isCurrentSessionUser) { this.updateDataUser(resp); }
           })
         );
       }),
@@ -201,27 +206,27 @@ export class UserService implements OnDestroy {
     let updatedUserForm: IUser = { ...userForm };
     if (!changeRole) {
       // Preparamos los datos para actualizar cuando el role no cambia
-       updatedUserForm = { ...updatedUserForm, role }; //Copia todas sus propiedades y añade el rol actual en BD
+      updatedUserForm = { ...updatedUserForm, role }; //Copia todas sus propiedades y añade el rol actual en BD
       return { updatedUserForm, url, headers };
     }
-  
-  // Preparamos los datos para actualizar cuando el nuevo rol y otras propiedades que cambian
+
+    // Preparamos los datos para actualizar cuando el nuevo rol y otras propiedades que cambian
     this._isCurrentRoleChanged = true;
     return { updatedUserForm, url, headers };
   }
 
-  private updateDataUser(user: IUser): void {
+  private updateDataUser(response: IUpdateUserResponse): void {
     const { image, google, uid, } = this.user$.getValue();
     const updatedUser = new User(
-      user.name,
-      user.email,
+      response.user.name,
+      response.user.email,
       '',
       image,
       google,
-      user.role,
+      response.user.role,
       uid
     );
-    
+
     this.user$.next(updatedUser);
   }
 

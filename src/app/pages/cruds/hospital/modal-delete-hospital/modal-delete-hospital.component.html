@@ -1,0 +1,20 @@
+ <!-- Modal -->
+ <div class="modal fade" id="deleteHospitalModal" tabindex="-1" role="dialog" aria-labelledby="deleteHospitalModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title" id="deleteHospitalModalLongTitle"><strong>Eliminar Hospital</strong></h3>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+         <p> El hospital a Eliminar es: <span class="hospitalname">{{hospital?.name}}</span></p> 
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-primary" (click)="deleteHospitalById()">Borrar</button>
+        </div>
+      </div>
+    </div>
+  </div>

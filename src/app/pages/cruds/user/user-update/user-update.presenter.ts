@@ -5,10 +5,15 @@ import { User } from '../../../../models/user.model';
 import { IUser } from '../../../../interfaces/user';
 import { UploadFileService } from '../../../../services/upload-file.service';
 import Swal from 'sweetalert2';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Injectable()
 export class UserUpdatePresenter {
-    constructor(private userService: UserService, private uploadFileService: UploadFileService) { }
+    constructor(
+        private userService: UserService,
+        private uploadFileService: UploadFileService,
+        private router: Router,
+        private route: ActivatedRoute) { }
 
     getUsersById(id: string): Observable<User> {
         return this.userService.getUsersById(id);
@@ -28,6 +33,15 @@ export class UserUpdatePresenter {
 
     updateUserImage(nameFile: string, isCurrentSessionUser: boolean): void {
         this.userService.updateUserImage(nameFile, isCurrentSessionUser);
+    }
+
+    redirectUserList(): void {
+        this.redirectToPath('../user-list');
+    }
+
+    private redirectToPath(path: string): void {
+        //  utiliza relativeTo para indicar que path es relativo a la ruta actual.
+        this.router.navigate([path], { relativeTo: this.route });
     }
 
     updateProfileSucess(): void {
@@ -54,7 +68,7 @@ export class UserUpdatePresenter {
             text: 'Actualización Exitosa',
             icon: 'success',
             confirmButtonText: 'Ok'
-          });
+        });
     }
 
     errorToUpdateUser(title: string, text: string): void {
@@ -63,7 +77,7 @@ export class UserUpdatePresenter {
             text,
             icon: 'error',
             confirmButtonText: 'OK'
-          });
+        });
     }
 
     errorGeneric(): void {
@@ -72,6 +86,6 @@ export class UserUpdatePresenter {
             text: 'Error en Actualización',
             icon: 'error',
             confirmButtonText: 'OK'
-          });
+        });
     }
 }

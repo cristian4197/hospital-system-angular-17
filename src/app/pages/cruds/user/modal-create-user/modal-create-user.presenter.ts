@@ -1,15 +1,14 @@
-import { EventEmitter, Injectable, OnInit, Output, OnDestroy } from '@angular/core';
-import { BoostrapService } from '../../services/boostrap.service';
-import { UtilService } from '../../services/utils.service';
+import { Injectable, OnInit } from '@angular/core';
+
 import { Subscription } from 'rxjs';
-import { UserService } from '../../services/user.service';
 import Swal from 'sweetalert2';
-import { Router } from '@angular/router';
 import { FormGroup } from '@angular/forms';
+import { BoostrapService } from '../../../../services/boostrap.service';
+import { UtilService } from '../../../../services/utils.service';
+import { UserService } from '../../../../services/user.service';
 
 @Injectable()
-export class ModalCreateUserPresenter implements OnInit {
-
+export class ModalCreateUserPresenter {
 
   private subscriptions: Subscription = new Subscription();
 
@@ -17,10 +16,6 @@ export class ModalCreateUserPresenter implements OnInit {
     private boostrapService: BoostrapService,
     private utilService: UtilService,
     private userService: UserService) { }
-
-  ngOnInit(): void {
-    throw new Error('Method not implemented.');
-  }
 
   showModal(idModal: string): void {
     this.boostrapService.openModal(idModal);

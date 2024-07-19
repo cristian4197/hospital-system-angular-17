@@ -6,7 +6,7 @@ import Swal from 'sweetalert2';
 import { BoostrapService } from '../../../../services/boostrap.service';
 
 @Injectable()
-export class UserDeletePresenter {
+export class ModalDeleteUserPresenter {
     constructor(private userService: UserService, private boostrapService: BoostrapService) { }
 
     deleteUser(uid: string): Observable<IDeleteUser> {

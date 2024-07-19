@@ -1,17 +1,18 @@
 import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { LoginForm } from '../../interfaces/login-form';
+import { ILoginForm } from '../../interfaces/login-form';
 import { GoogleService } from '../../services/google.service';
-import { Subscription } from 'rxjs';
-import { IDataLoginStrategy } from '../../interfaces/login-strategy';
+import { Subscription, timer } from 'rxjs';
+// import { IDataLoginStrategy } from '../../interfaces/login-strategy';
 import { LoginPresenter } from './login.presenter';
+import { SpinnerComponent } from '../../components/spinner/spinner.component';
 
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterModule,FormsModule, ReactiveFormsModule],
+  imports: [RouterModule, FormsModule, ReactiveFormsModule, SpinnerComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
   providers: [LoginPresenter]
@@ -69,21 +70,11 @@ export default class LoginComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private handleCredentialResponse(credential: string) {
-    // Datos para logeo con google
-    const data:IDataLoginStrategy = {
-      token: credential
-    };
-    
-    this.loginPresenter.handleCredentialResponse(data);
+    this.loginPresenter.handleCredentialResponse(credential);
   }
 
   onLogin(): void {
-     // Datos para logeo con usuario y password
-    const data:IDataLoginStrategy = {
-      loginForm: this.loginForm.value as LoginForm
-    };
-
-    this.loginPresenter.login(data, this.loginForm.get('email') as AbstractControl);
+    this.loginPresenter.login(this.loginForm.value as ILoginForm, this.loginForm.get('email') as AbstractControl);
   }
 
   ngOnDestroy(): void {

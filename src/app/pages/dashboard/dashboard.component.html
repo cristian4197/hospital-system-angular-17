@@ -1,1 +1,8 @@
-<p>dashboard works!</p>
+<div class="jumbotron jumbotron-fluid container-banner">
+    <div class="container">
+        <h1 class="display-4">Panel de Administración</h1>
+        <hr>
+        <p class="lead">¡Bienvenido(a)! <strong>{{(currentUserSession | async)!.name}}</strong></p>
+        <p class="lead">Podrás realizar acciones según el rol que tienes definido</p>
+    </div>
+</div>

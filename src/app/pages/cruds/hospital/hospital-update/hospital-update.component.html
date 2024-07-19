@@ -1,0 +1,41 @@
+<hr>
+<app-back-button (clickButtonEmit)="redirectoHospitalList()"></app-back-button>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Actualización de Hospital</h4>
+                <h6 class="card-subtitle">Datos Actuales</h6>
+                <form class="form p-t-20"  [formGroup]="updateForm">
+                    <div class="form-group">
+                        <label for="exampleInputuname">Hospital</label>
+                        <div class="input-group">
+                            <div class="input-group-addon"><i class="ti-home"></i></div>
+                            <input type="text" class="form-control" id="exampleInputuname" placeholder="Nombre" formControlName="name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleInputEmail1">Ultimo Modificador</label>
+                        <div class="input-group">
+                            <div class="input-group-addon"><i class="ti-user"></i></div>
+                            <input type="text" class="form-control" id="exampleInputEmail1" readonly formControlName="lastModifier">
+                        </div>
+                    </div>
+                    <button class="btn btn-success btn-block waves-effect waves-light m-r-10" (click)="updateUser()"><i class="fa fa-save"></i> Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+
+      
+    </div>
+    <div class="col-md-6">
+        <app-card-image 
+            [cardTitle]="'Imagen de hospital'"
+            [cardSubTitle]="''" 
+            [imageSrc]="imageSrc"
+            altImage="Imagen de hospital"
+            (changeInputEmit)="changeFile($event)"
+            (clickEmit)="uploadImageChanged()">
+    </app-card-image>
+    </div>
+</div>

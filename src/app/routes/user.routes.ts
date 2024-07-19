@@ -17,7 +17,7 @@ export const usersChildRoutes: Routes = [
     },
     {
         path: 'user-delete',
-        loadComponent: () => import('../pages/cruds/user/user-delete/user-delete.component'),
+        loadComponent: () => import('../pages/cruds/user/modal-delete-user/modal-delete-user.component'),
         data: {
             title: 'Borrado de Usuarios'
         }

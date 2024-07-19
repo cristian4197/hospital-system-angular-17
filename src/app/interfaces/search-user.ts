@@ -1,5 +1,5 @@
 import { User } from "../models/user.model";
 
-export interface SearchUser {
+export interface ISearchUser {
     results: User[]
 }

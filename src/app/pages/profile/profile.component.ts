@@ -7,11 +7,12 @@ import Swal from 'sweetalert2';
 import { Subscription } from 'rxjs';
 import { ProfilePresenter } from './profile.presenter';
 import { roleDescriptionMap, roles } from '../../const/roles.const';
+import { CardImageComponent } from '../../components/card-image/card-image.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CardImageComponent],
   providers: [ProfilePresenter],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
@@ -29,7 +30,7 @@ export default class ProfileComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription = new Subscription();
 
-  public imageTemp: any;
+  public imageTemp!: string | ArrayBuffer | null;
 
   public currentUserSession!: User;
 
@@ -43,6 +44,9 @@ export default class ProfileComponent implements OnInit, OnDestroy {
     return role || 'Seleccione Rol';
   }
 
+  get imageSrc(): string {
+    return !this.imageTemp ? this.user.image : this.imageTemp as string;
+  }
 
   constructor(private fb: FormBuilder,
     private userService: UserService,
@@ -142,8 +146,12 @@ export default class ProfileComponent implements OnInit, OnDestroy {
     const isCurrentSessionUser = true;
     this.profilePresenter.updatePhoto(this.imageToUpload, 'users', this.user.uid as string)
       .then(resp => {
-        this.profilePresenter.updateUserImage(resp.nameFile, isCurrentSessionUser);
-        this.profilePresenter.updateProfileSucess();
+        if(resp.ok) {
+          this.profilePresenter.updateUserImage(resp.nameFile, isCurrentSessionUser);
+          this.profilePresenter.updateProfileSucess();
+        } else {
+          this.profilePresenter.errorToupdateProfile();
+        }
       })
       .catch(error => {
         this.profilePresenter.errorToupdateProfile();

@@ -7,11 +7,13 @@ import { User } from '../../../../models/user.model';
 import { IUser } from '../../../../interfaces/user';
 import { UserUpdatePresenter } from './user-update.presenter';
 import { roleDescriptionMap, roles } from '../../../../const/roles.const';
+import { CardImageComponent } from '../../../../components/card-image/card-image.component';
+import { BackButtonComponent } from '../../../../components/back-button/back-button.component';
 
 @Component({
   selector: 'app-user-update',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, CardImageComponent, BackButtonComponent],
   templateUrl: './user-update.component.html',
   styleUrl: './user-update.component.css',
   providers: [UserUpdatePresenter]
@@ -35,13 +37,17 @@ export default class UserUpdateComponent implements OnInit, OnDestroy {
 
   public user!: User;
 
-  public imageTemp: any;
+  public imageTemp!: string | ArrayBuffer | null;
 
   public imageToUpload!: File;
 
   get currentRole(): string{
     const role = this.roleDescriptionMap[this.updateForm.get('role')?.value as string];
     return role || 'Seleccione Rol';
+  }
+
+  get imageSrc(): string {
+    return !this.imageTemp ? this.user?.image : this.imageTemp as string;
   }
 
   constructor(private route: ActivatedRoute,
@@ -152,8 +158,12 @@ export default class UserUpdateComponent implements OnInit, OnDestroy {
     const isCurrentSessionUser = false;
     this.userUpdatePresenter.updatePhoto(this.imageToUpload, 'users', this.user.uid as string)
       .then(resp => {
-        this.userUpdatePresenter.updateUserImage(resp.nameFile, isCurrentSessionUser);
-        this.updateProfileSucess();
+        if(resp.ok) {
+          this.userUpdatePresenter.updateUserImage(resp.nameFile, isCurrentSessionUser);
+          this.updateProfileSucess();
+        } else {
+          this.errorToupdateProfile();
+        }
       })
       .catch(error => {
         this.errorToupdateProfile();
@@ -171,6 +181,10 @@ export default class UserUpdateComponent implements OnInit, OnDestroy {
 
   currentRoleOption(opcion: string) {
     this.updateForm.get('role')?.setValue(opcion);
+  }
+
+  redirectUserList(): void {
+    this.userUpdatePresenter.redirectUserList();
   }
 
   ngOnDestroy(): void {

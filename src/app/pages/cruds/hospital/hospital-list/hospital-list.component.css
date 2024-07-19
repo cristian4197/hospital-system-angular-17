@@ -1,0 +1,8 @@
+.container-button {
+    display: flex;
+    justify-content: center;
+}
+
+.crossDelete{
+    cursor: pointer;
+}

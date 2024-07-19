@@ -1,0 +1,18 @@
+<div class="card">
+  <div class="card-body">
+    <h4 class="card-title">{{ cardTitle }}</h4>
+    <h6 class="card-subtitle">{{ cardSubTitle }}</h6>
+    <div class="container-image d-flex justify-content-center">
+      <img [src]="imageSrc" [alt]="altImage" [width]="width" [height]="height">
+    </div>
+    <br>
+    <input type="file" (change)="onChangeInputEvent($event)">
+
+    <br><br>
+
+    <button type="button" class="btn btn-success btn-block waves-effect waves-light m-r-10" (click)="onClickButton()">
+      <i class="fa fa-save"></i> {{ textButton }}
+    </button>
+
+  </div>
+</div>
